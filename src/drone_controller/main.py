@@ -1,24 +1,34 @@
+import asyncio
 import os
-import socket
 
-HOST = os.environ['UAV_HOST']  # The server's hostname or IP address
-PORT = os.environ['UAV_PORT']  # The port used by the server
+HOST = ''
+PORT = int(os.environ['PORT'])
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+UAV_HOST = os.environ['UAV_HOST']
+UAV_PORT = os.environ['UAV_PORT']
 
-server_address = (HOST, PORT)
+async def control_drone(position_data) -> None:
+     pass
+ 
+async def handle_incoming(self, reader, writer):
+        data = await reader.read()
+        payload = eval(data.decode())
+        addr = writer.get_extra_info('peername')
 
-try:
+        print(f'Received {payload} from {addr!r}')
 
-    # Send data
-    print('sending "%s"' % message)
-    sent = sock.sendto(message.encode(), (server_address))
+        await control_drone(payload)
 
-    # Receive response
-    print('waiting to receive')
-    data, server = sock.recvfrom(4096)
-    print('received "%s"' % data)
+async def server() -> None:
+    server = await asyncio.start_server(
+                            handle_incoming, 
+                            HOST, PORT)
 
-finally:
-    print('closing socket')
-    sock.close()
+    addrs = ', '.join(str(sock.getsockname()) for sock in server.sockets)
+    print(f'Serving on {addrs}')
+
+    async with server:
+        await server.serve_forever()
+
+if __name__ == "__main__":
+    asyncio.run(server())
