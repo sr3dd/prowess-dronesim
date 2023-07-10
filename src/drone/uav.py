@@ -158,12 +158,12 @@ class UAV:
 
     async def fly(self) -> None:
         server = await asyncio.start_server(
-        self.handle_incoming, HOST, PORT)
+                            self.handle_incoming, 
+                            HOST, PORT)
 
         addrs = ', '.join(str(sock.getsockname()) for sock in server.sockets)
         print(f'Serving on {addrs}')
 
         async with server:
             await server.serve_forever()
-        
-                    
+      

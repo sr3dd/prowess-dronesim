@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: single-drone-experiment
+spec:
+  containers:
+  - name: drone
+    image: sred21/drone
+    volumeMounts:
+    - name: image-mount
+      mountPath: /images
+    env:
+    - name: UAV_PORT
+      value: 65432
+    - name: INFERENCE_HOST
+      value: "localhost"
+    - name: INFERENCE_PORT
+      value: 64001
+    - name: TRANSMIT_DELAY
+      value: 1
+    - name: INNER_MOTION_DELAY
+      value: 0.2
+    - name: OUTER_MOTION_DELAY
+      value: 0.5
+    - name: TRANSMIT_DRAIN
+      value: 1
+    - name: INNER_MOTION_DRAIN
+      value: 0.2
+    - name: OUTER_MOTION_DRAIN
+      value: 0.5
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1"
+      limits:
+        memory: "2Gi"
+        cpu: "1"
+  - name: drone-controller
+    image: sred21/drone-controller
+    env:
+    - name: UAV_PORT
+      value: 65432
+    - name: UAV_HOST
+      value: "localhost"
+    - name: PORT
+      value: 64001
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1"
+      limits:
+        memory: "2Gi"
+        cpu: "1"
+  - name: autonomous-controller
+    image: sred21/auto-controller
+    env:
+    - name: PORT
+      value: 64002
+    - name: DRONE_CONTROLLER_HOST
+      value: "localhost"
+    - name: DRONE_CONTROLLER_PORT
+      value: 64001
+    - name: OUTER_GRID
+      value: 4
+    - name: INNER_GRID
+      value: 4
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1"
+      limits:
+        memory: "2Gi"
+        cpu: "1"
+  - name: inference-server
+    image: sred21/edge-server
+    env:
+    - name: PORT
+      value: 64003
+    - name: AUTO_CONTROLLER_HOST
+      value: "localhost"
+    - name: AUTO_CONTROLLER_PORT
+      value: 64002
+    - name: INFERENCE_DELAY
+      value: 5.0
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "1"
+      limits:
+        memory: "2Gi"
+        cpu: "1"
+  volumes:
+  - name: image-mount
+    hostPath:
+      path: 
+  nodeSelector:
+    kubernetes.io/hostname: 
