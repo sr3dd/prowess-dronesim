@@ -1,0 +1,57 @@
+{
+    "drone": {
+        "count": 10,
+        "config": {
+            "INFERENCE_HOST": "inference-server",
+            "INFERENCE_PORT": 64003,
+            "DC_HOST": "",
+            "DC_PORT": 64001,
+            "TRANSMIT_DELAY": 1,
+            "INNER_MOTION_DELAY": 0.2,
+            "OUTER_MOTION_DELAY": 0.5,
+            "TRANSMIT_DRAIN": 1,
+            "INNER_MOTION_DRAIN": 0.2,
+            "OUTER_MOTION_DRAIN": 0.5
+        },
+        "node_select": "tdai-el1000",
+        "resources": {
+            "requests": {
+                "memory": "1Gi",
+                "cpu": 1
+            },
+            "limits": {
+                "memory": "1Gi",
+                "cpu": 1
+            }
+        }
+    },
+    "dc": {
+        "config" : {
+            "AC_HOST": "autonomous-controller",
+            "AC_PORT": 64002,
+            "DRONE_PORT": 64004
+        },
+        "resources": {
+
+        }
+    },
+    "ac": {
+        "config": {
+            "CONTROLLER_PORT": 64001,
+            "OUTER_GRID": 2,
+            "INNER_GRID": 3
+        },
+        "resources": {
+
+        }
+    },
+    "edge": {
+        "config": {
+            "AC_HOST": "autonomous-controller",
+            "AC_PORT": 64002
+        },
+        "resources": {
+
+        }
+    }
+}
