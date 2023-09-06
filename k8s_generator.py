@@ -27,6 +27,7 @@ def generate_drone_spec(config):
         if config['resources']:
             spec['resources'] = config['resources']
 
+        print(spec)
         drones.append(spec)
 
     return drones
@@ -98,6 +99,7 @@ def generate_pod_manifest(config_file, experiment_name, output_file_name):
     manifest = {'apiVersion': 'v1', 'kind': 'Pod', 'metadata': {'name': experiment_name} }
     manifest['spec'] = {'containers': container_specs}
 
+    print(manifest)
     with open(output_file_name, 'w') as file:
         yaml.dump(manifest, file)
 

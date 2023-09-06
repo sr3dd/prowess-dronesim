@@ -6,6 +6,13 @@ A simple framework to simulate drone workloads on the PROWESS testbed.
 
 ## Containers
 
+Containers required for the experiment are uploaded to hub.docker.com (user: sred21) and their source files are also available in this repository:
+
+1. drone
+2. drone-controller
+3. auto-controller
+4. edge-server
+
 
 ## Experimentation
 

@@ -1,6 +1,6 @@
 {
     "drone": {
-        "count": 10,
+        "count": 2,
         "config": {
             "INFERENCE_HOST": "inference-server",
             "INFERENCE_PORT": 64003,
