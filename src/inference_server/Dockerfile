@@ -1,16 +1,16 @@
-FROM python:3.11-alpine
+FROM python:3.10.8-slim
 
-ENV PORT 65432
+ENV PORT 64003
 
-ENV AUTO_CONTROLLER_HOST CHANGE-THIS
-ENV AUTO_CONTROLLER_PORT CHANGE-THIS
+ENV AC_HOST CHANGE-THIS
+ENV AC_PORT 64002
 
-ENV INFERENCE_DELAY 5.0
+ENV INFERENCE_TIME 2
 
-WORKDIR /app
+WORKDIR /code
 
-COPY *.py /app
+COPY . /code/
 
-ENTRYPOINT [ "python" ]
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-CMD ["main.py"]
+CMD uvicorn main:app --host 0.0.0.0 --port $PORT

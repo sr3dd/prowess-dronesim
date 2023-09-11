@@ -1,37 +1,27 @@
-import asyncio
 import os
 import time
 
-HOST = ''
-PORT = int(os.environ['PORT'])
+from fastapi import FastAPI
+import requests
 
-AUTO_CONTROLLER_HOST = os.environ['AUTO_CONTROLLER_HOST']
-AUTO_CONTROLLER_PORT = os.environ['AUTO_CONTROLLER_PORT']
+AC_HOST = os.environ['AC_HOST']
+AC_PORT = os.environ['AC_PORT']
 
-INFERENCE_DELAY = float(os.environ['INFERENCE_DELAY'])
+INFERENCE_TIME = int(os.environ['INFERENCE_TIME'])
 
-async def notify_controller(position_data) -> None:
-     pass
- 
-async def handle_incoming(self, reader, writer):
-        data = await reader.read()
-        payload = eval(data.decode())
-        addr = writer.get_extra_info('peername')
+app = FastAPI()
 
-        print(f'Received {payload} from {addr!r}')
-        time.sleep(INFERENCE_DELAY)
-        await notify_controller(payload)
+@app.post("/infer/")
+async def infer_data(body):
+    
+    print(f'Received data sample from drone...')
+    time.sleep(INFERENCE_TIME)
 
-async def server() -> None:
-    server = await asyncio.start_server(
-                            handle_incoming, 
-                            HOST, PORT)
+    payload = {'id': body['id'], 'out_x': body['outx'], 'out_y': body['outy'],
+                'in_x': body['inx'], 'in_y': body['iny']}
+    
+    url = f'http://{AC_HOST}:{AC_PORT}/inferenceupdate'
 
-    addrs = ', '.join(str(sock.getsockname()) for sock in server.sockets)
-    print(f'Serving on {addrs}')
+    r = requests.post(url, json=payload)
 
-    async with server:
-        await server.serve_forever()
-
-if __name__ == "__main__":
-    asyncio.run(server())
+    return payload
