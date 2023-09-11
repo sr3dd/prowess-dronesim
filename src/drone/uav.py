@@ -1,15 +1,15 @@
-import asyncio
 import os
 import sys
 import time
 
-from models import Action, Grid
+import requests
 
-HOST = ''
-PORT = int(os.environ['UAV_PORT'])
+from models import Action
 
-INFERENCE_SERVER_HOST = os.environ['INFERENCE_HOST']
-INFERENCE_SERVER_PORT = os.environ['INFERENCE_PORT']
+DC_HOST = os.environ['DC_HOST']
+DC_PORT = os.environ['DC_PORT']
+INFERENCE_HOST = os.environ['INFERENCE_HOST']
+INFERENCE_PORT = os.environ['INFERENCE_PORT']
 
 TRANSMIT_DELAY = float(os.environ['TRANSMIT_DELAY'])
 INNER_MOTION_DELAY = float(os.environ['INNER_MOTION_DELAY'])
@@ -18,63 +18,62 @@ TRANSMIT_DRAIN = float(os.environ['TRANSMIT_DRAIN'])
 INNER_MOTION_DRAIN = float(os.environ['INNER_MOTION_DRAIN'])
 OUTER_MOTION_DRAIN = float(os.environ['OUTER_MOTION_DRAIN'])
 
+def compute_distance(self, old_pos, new_pos):
+    #placeholder
+    return 1.0
 
 class UAV:
     def __init__(self) -> None:
+        self._dc_id = None
         self._battery: float = 100
-        self._outer_grid_size: int | None = None
-        self._inner_grid_size: int | None = None
-        self._outer_pos: int | None = None
-        self._inner_pos: int | None = None
+        self._outerx: 0
+        self._outery: 0
+        self._innerx: 0
+        self._innery: 0
 
-    def compute_distance(self, old_pos: int, new_pos: int, grid: Grid = Grid.OUTER) -> int:
-        #placeholder
-        return 1
+    def init_position(self, grid_pos, dc_id):
+        self._dc_id = dc_id
+        self.decrement_battery(Action.MOVE_OUTER, (grid_pos[0], grid_pos[1]))
+        self._outerx = grid_pos[0]
+        self._outery = grid_pos[1]
+        self._innerx = grid_pos[2]
+        self._innery = grid_pos[3]
 
-    def init_position(self, outer_grid: int, inner_grid: int, 
-                        outer_pos: int, inner_pos: int = 0) -> None:
+    def move(self, new_pos):
+
+        if (self._outerx, self._outery) != (new_pos[0], new_pos[1]):
+            self.decrement_battery(Action.MOVE_OUTER, (new_pos[0], new_pos[1]))
+        else:
+            self.decrement_battery(Action.MOVE_INNER, (new_pos[2], new_pos[3]))
+
+        self._outerx = new_pos[0]
+        self._outery = new_pos[1]
+        self._innerx = new_pos[2]
+        self._innery = new_pos[3]
+        return
         
-        if self._outer_grid_size is not None:
-            print('Drone already in grid')
-            return
-        
-        self._outer_grid_size = outer_grid
-        self._inner_grid_size = inner_grid
-        self.move_outer(outer_pos, inner_pos)
+    def get_status(self):
+        status = f'Battery: {self._battery}\tOuter Position: ({self._outerx}, {self._outery})\tInner Postion: ({self._innerx}, {self._innery})'
+        print(status)
+        return status
 
-    def move_outer(self, out_pos: int, in_pos: int = 0) -> None:
-        self.decrement_battery(Action.MOVE_OUTER, out_pos, in_pos)
-        self._outer_pos = out_pos
-        self._inner_pos = in_pos
-
-    def move_inner(self, in_pos: int) -> None:
-        self.decrement_battery(Action.MOVE_INNER, inner_pos = in_pos)
-        self._inner_pos = in_pos
-
-    def get_status(self) -> None:
-        print(f'Battery: {self._battery}\tOuter Position: {self._outer_pos}\tInner Postion: {self._inner_pos}')
-
-    async def transmit_payload(self) -> None:
+    def transmit_payload(self) -> None:
         self.decrement_battery(Action.TRANSMIT)
-        reader, writer = await asyncio.open_connection(
-        INFERENCE_SERVER_HOST, INFERENCE_SERVER_PORT)
 
         # a payload of ~9 MB
         image = 'abc'*3*1024
 
-        print(f'Transmitting image...')
-        writer.write(image.encode())
-        await writer.drain()
+        url = f'http://{INFERENCE_HOST}:{INFERENCE_PORT}/infer'
 
-        data = await reader.read()
-        print(f'Received: {data.decode()!r}')
+        payload = {'id': self._dc_id, 'outx': self._outerx, 'outy': self._outery,
+                    'inx': self._innerx, 'iny': self._innery, 'image': image}
 
-        print('Closing the connection')
-        writer.close()
-        await writer.wait_closed()
+        r = requests.post(url, json=payload)
 
+        return r
+    
     def decrement_battery(self, action_type: Action, 
-                            out_pos: int = None, inner_pos: int = None) -> None:
+                            new_pos):
         
         match action_type:
             case Action.TRANSMIT:
@@ -84,86 +83,19 @@ class UAV:
 
             case Action.MOVE_INNER:
                 print('Battery consumption due to inner move')
-                distance = self.compute_distance(self._inner_grid_size, 
-                                                self._inner_pos if self._inner_pos else 0, 
-                                                inner_pos)
+                distance = compute_distance((self._innerx, self._innery), new_pos)
                 self._battery -= INNER_MOTION_DRAIN*distance
                 time.sleep(INNER_MOTION_DELAY*distance)
 
             case Action.MOVE_OUTER:
                 print('Battery consumption due to outer move')
-                outer_distance = self.compute_distance(self._inner_grid_size, 
-                                                self._outer_pos if self._outer_pos else 0, 
-                                                inner_pos)
-                self._battery -= OUTER_MOTION_DRAIN*outer_distance
-                time.sleep(OUTER_MOTION_DELAY*outer_distance)
-
-                inner_distance = self.compute_distance(self._inner_grid_size, 
-                                                self._inner_pos if self._inner_pos else 0, 
-                                                inner_pos)
-                self._battery -= INNER_MOTION_DRAIN*inner_distance
-                time.sleep(INNER_MOTION_DELAY*inner_distance)
+                distance = compute_distance((self._outerx, self._outery), new_pos)
+                self._battery -= OUTER_MOTION_DRAIN*distance
+                time.sleep(OUTER_MOTION_DELAY*distance)
 
         if self._battery <= 0:
+            url = f'http://{DC_HOST}:{DC_PORT}/kill'
+            r = requests.get(url)
+            print(r.response)
             sys.exit('Battery died.')
-            
-    async def handle_incoming(self, reader, writer):
-        data = await reader.read()
-        payload = eval(data.decode())
-        addr = writer.get_extra_info('peername')
-
-        print(f'Received {payload} from {addr!r}')
-
-        match payload['do']:
-            case 'init':
-                if {'outer_grid', 'inner_grid', 'outer_pos'} <= set(payload):
-                    if 'inner_pos' in payload:
-                        self.init_position(payload['outer_grid'],
-                                            payload['inner_grid'],
-                                            payload['outer_pos'],
-                                            payload['inner_pos'])
-                    else:
-                        self.init_position(payload['outer_grid'],
-                                            payload['inner_grid'],
-                                            payload['outer_pos'])
-                else:
-                    print('Init payload missing mandatory keys')
-            case 'omove':
-                if 'outer_pos' in payload:
-                    if 'inner_pos' in payload:
-                        self.move_outer(payload['outer_pos'],
-                                        payload['inner_pos'])
-                    else:
-                        self.init_position(payload['outer_pos'])
-                else:
-                    print('Outer Move payload missing mandatory keys')
-            case 'imove':
-                if 'pos' in payload:
-                    self.move_inner(payload['pos'])
-                else:
-                    print('Inner Move payload missing mandatory keys')
-
-        self.get_status()
-
-        print('\tSending ack...')
-        writer.write('Received'.encode())
-        await writer.drain()
-
-        print('Closing the connection')
-        writer.close()
-        await writer.wait_closed()
-
-        print('Initiating image transmission')
-        await self.transmit_payload()
-
-    async def fly(self) -> None:
-        server = await asyncio.start_server(
-                            self.handle_incoming, 
-                            HOST, PORT)
-
-        addrs = ', '.join(str(sock.getsockname()) for sock in server.sockets)
-        print(f'Serving on {addrs}')
-
-        async with server:
-            await server.serve_forever()
       
