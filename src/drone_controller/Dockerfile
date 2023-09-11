@@ -1,13 +1,16 @@
-FROM python:3.11-alpine
+FROM python:3.10.8-slim
 
-ENV PORT 65432
-ENV UAV_HOST CHANGE-THIS
-ENV UAV_PORT CHANGE-THIS
+ENV PORT 64001
 
-WORKDIR /app
+ENV AC_HOST CHANGE-THIS
+ENV AC_PORT 64002
+ENV DRONE_HOST CHANGE-THIS
+ENV DRONE_PORT 64004
 
-COPY *.py /app
+WORKDIR /code
 
-ENTRYPOINT [ "python" ]
+COPY . /code/
 
-CMD ["main.py"]
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
+
+CMD uvicorn main:app --host 0.0.0.0 --port $PORT

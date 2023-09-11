@@ -1,34 +1,42 @@
-import asyncio
 import os
+import uuid
 
-HOST = ''
-PORT = int(os.environ['PORT'])
+from fastapi import FastAPI
+import requests
 
-UAV_HOST = os.environ['UAV_HOST']
-UAV_PORT = os.environ['UAV_PORT']
+DRONE_HOST = os.environ['DRONE_HOST']
+DRONE_PORT = os.environ['DRONE_PORT']
 
-async def control_drone(position_data) -> None:
-     pass
- 
-async def handle_incoming(self, reader, writer):
-        data = await reader.read()
-        payload = eval(data.decode())
-        addr = writer.get_extra_info('peername')
+AC_HOST = os.environ['AC_HOST']
+AC_PORT = os.environ['AC_PORT']
 
-        print(f'Received {payload} from {addr!r}')
+dc_id = uuid.uuid4().hex
 
-        await control_drone(payload)
+app = FastAPI()
 
-async def server() -> None:
-    server = await asyncio.start_server(
-                            handle_incoming, 
-                            HOST, PORT)
+@app.get("/id")
+def return_id():
+    print('ID requested from AC...')
+    return {'id': dc_id}
 
-    addrs = ', '.join(str(sock.getsockname()) for sock in server.sockets)
-    print(f'Serving on {addrs}')
+@app.post("/init")
+def move_drone(body):
+    body['id'] = dc_id
+    url = f'http://{DRONE_HOST}:{DRONE_PORT}/move'
+    r = requests.post(url, json=body)
+    return body
 
-    async with server:
-        await server.serve_forever()
+@app.post("/move")
+def move_drone(body):
+    url = f'http://{DRONE_HOST}:{DRONE_PORT}/move'
+    r = requests.post(url, json=body)
+    return body
 
-if __name__ == "__main__":
-    asyncio.run(server())
+@app.get("/kill")
+def drone_invalid():
+    print('Drone battery depleted.')
+    url = f'http://{AC_HOST}:{AC_PORT}/droneupdate/{dc_id}'
+
+    r = requests.get(url)
+
+    return url
