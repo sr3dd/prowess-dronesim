@@ -1,0 +1,271 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: drone-1
+  name: drone-1
+spec:
+  containers:
+  - env:
+    - name: INFERENCE_HOST
+      value: inference-server
+    - name: INFERENCE_PORT
+      value: '64003'
+    - name: DC_HOST
+      value: drone-controller-0
+    - name: DC_PORT
+      value: '64001'
+    - name: TRANSMIT_DELAY
+      value: '1'
+    - name: INNER_MOTION_DELAY
+      value: '0.2'
+    - name: OUTER_MOTION_DELAY
+      value: '0.5'
+    - name: TRANSMIT_DRAIN
+      value: '1'
+    - name: INNER_MOTION_DRAIN
+      value: '0.2'
+    - name: OUTER_MOTION_DRAIN
+      value: '0.5'
+    image: sred21/drone
+    name: drone-1
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: drone-2
+  name: drone-2
+spec:
+  containers:
+  - env:
+    - name: INFERENCE_HOST
+      value: inference-server
+    - name: INFERENCE_PORT
+      value: '64003'
+    - name: DC_HOST
+      value: drone-controller-1
+    - name: DC_PORT
+      value: '64001'
+    - name: TRANSMIT_DELAY
+      value: '1'
+    - name: INNER_MOTION_DELAY
+      value: '0.2'
+    - name: OUTER_MOTION_DELAY
+      value: '0.5'
+    - name: TRANSMIT_DRAIN
+      value: '1'
+    - name: INNER_MOTION_DRAIN
+      value: '0.2'
+    - name: OUTER_MOTION_DRAIN
+      value: '0.5'
+    image: sred21/drone
+    name: drone-2
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: drone-3
+  name: drone-3
+spec:
+  containers:
+  - env:
+    - name: INFERENCE_HOST
+      value: inference-server
+    - name: INFERENCE_PORT
+      value: '64003'
+    - name: DC_HOST
+      value: drone-controller-2
+    - name: DC_PORT
+      value: '64001'
+    - name: TRANSMIT_DELAY
+      value: '1'
+    - name: INNER_MOTION_DELAY
+      value: '0.2'
+    - name: OUTER_MOTION_DELAY
+      value: '0.5'
+    - name: TRANSMIT_DRAIN
+      value: '1'
+    - name: INNER_MOTION_DRAIN
+      value: '0.2'
+    - name: OUTER_MOTION_DRAIN
+      value: '0.5'
+    image: sred21/drone
+    name: drone-3
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: drone-4
+  name: drone-4
+spec:
+  containers:
+  - env:
+    - name: INFERENCE_HOST
+      value: inference-server
+    - name: INFERENCE_PORT
+      value: '64003'
+    - name: DC_HOST
+      value: drone-controller-3
+    - name: DC_PORT
+      value: '64001'
+    - name: TRANSMIT_DELAY
+      value: '1'
+    - name: INNER_MOTION_DELAY
+      value: '0.2'
+    - name: OUTER_MOTION_DELAY
+      value: '0.5'
+    - name: TRANSMIT_DRAIN
+      value: '1'
+    - name: INNER_MOTION_DRAIN
+      value: '0.2'
+    - name: OUTER_MOTION_DRAIN
+      value: '0.5'
+    image: sred21/drone
+    name: drone-4
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: drone-controller-1
+  name: drone-controller-1
+spec:
+  containers:
+  - env:
+    - name: AC_HOST
+      value: autonomous-controller
+    - name: AC_PORT
+      value: '64002'
+    - name: DRONE_PORT
+      value: '64004'
+    - name: DRONE_HOST
+      value: drone-1
+    image: sred21/drone-controller
+    name: drone-controller-1
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: drone-controller-2
+  name: drone-controller-2
+spec:
+  containers:
+  - env:
+    - name: AC_HOST
+      value: autonomous-controller
+    - name: AC_PORT
+      value: '64002'
+    - name: DRONE_PORT
+      value: '64004'
+    - name: DRONE_HOST
+      value: drone-2
+    image: sred21/drone-controller
+    name: drone-controller-2
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: drone-controller-3
+  name: drone-controller-3
+spec:
+  containers:
+  - env:
+    - name: AC_HOST
+      value: autonomous-controller
+    - name: AC_PORT
+      value: '64002'
+    - name: DRONE_PORT
+      value: '64004'
+    - name: DRONE_HOST
+      value: drone-3
+    image: sred21/drone-controller
+    name: drone-controller-3
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: drone-controller-4
+  name: drone-controller-4
+spec:
+  containers:
+  - env:
+    - name: AC_HOST
+      value: autonomous-controller
+    - name: AC_PORT
+      value: '64002'
+    - name: DRONE_PORT
+      value: '64004'
+    - name: DRONE_HOST
+      value: drone-4
+    image: sred21/drone-controller
+    name: drone-controller-4
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: autonomous-controller
+  name: autonomous-controller
+spec:
+  containers:
+  - env:
+    - name: CONTROLLER_PORT
+      value: '64001'
+    - name: OUTER_GRID
+      value: '2'
+    - name: INNER_GRID
+      value: '3'
+    - name: CONTROLLER_HOSTS
+      value: drone-controller-1|drone-controller-2|drone-controller-3|drone-controller-4
+    image: sred21/auto-controller
+    name: autonomous-controller
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: inference-server
+  name: inference-server
+spec:
+  containers:
+  - env:
+    - name: AC_HOST
+      value: autonomous-controller
+    - name: AC_PORT
+      value: '64002'
+    image: sred21/edge-server
+    name: inference-server
