@@ -37,7 +37,10 @@ Scripts arguments:
 Example:
 
 ```bash
+# For generating a YAML manifest which launches multiple pods
+python k8s_generator.py -f config_file -t multipod -o output_file exp_name
 
-python k8s_generator.py experiment_config.json experiment-1 experiment-1.yaml
+# For generating a YAML manifest which creates a single pod with multiple containers
+pyton k8s_generator.py -f config_file -t pod -o output_file exp_name
 
 ```
