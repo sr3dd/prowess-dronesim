@@ -1,0 +1,49 @@
+version: '3.3'
+
+services:
+  drone1:
+    container_name: drone1
+    image: sred21/drone
+    environment:
+      - PORT=64004
+      - DC_HOST=dc1
+      - DC_PORT=64001
+      - INFERENCE_HOST=inf
+      - INFERENCE_PORT=64003
+      - TRANSMIT_DELAY=1
+      - INNER_MOTION_DELAY=0.2
+      - OUTER_MOTION_DELAY=0.5
+      - TRANSMIT_DRAIN=1
+      - INNER_MOTION_DRAIN=0.2
+      - OUTER_MOTION_DRAIN=0.5
+
+  dc1:
+    container_name: dc1
+    image: sred21/drone-controller
+    environment:
+      - PORT=64001
+      - AC_HOST=ac
+      - AC_PORT=64002
+      - DRONE_HOST=drone1
+      - DRONE_PORT=64004
+
+  autoc:
+    container_name: autoc
+    image: sred21/auto-controller
+    environment:
+      - PORT=64002
+      - CONTROLLER_HOSTS=dc1
+      - CONTROLLER_PORT=64001
+      - OUTER_GRID=3
+      - INNER_GRID=2
+    ports:
+      - 9001:64002
+  
+  inf:
+    container_name: inf
+    image: sred21/edge-server
+    environment:
+      - PORT=64003
+      - AC_HOST=ac
+      - AC_PORT=64002
+      - INFERENCE_TIME=2
