@@ -4,7 +4,7 @@ import time
 
 import requests
 
-from models import Action
+from .models import Action
 
 DC_HOST = os.environ['DC_HOST']
 DC_PORT = os.environ['DC_PORT']
@@ -18,7 +18,7 @@ TRANSMIT_DRAIN = float(os.environ['TRANSMIT_DRAIN'])
 INNER_MOTION_DRAIN = float(os.environ['INNER_MOTION_DRAIN'])
 OUTER_MOTION_DRAIN = float(os.environ['OUTER_MOTION_DRAIN'])
 
-def compute_distance(self, old_pos, new_pos):
+def compute_distance(old_pos, new_pos):
     #placeholder
     return 1.0
 
@@ -26,10 +26,10 @@ class UAV:
     def __init__(self) -> None:
         self._dc_id = None
         self._battery: float = 100
-        self._outerx: 0
-        self._outery: 0
-        self._innerx: 0
-        self._innery: 0
+        self._outerx: int = 0
+        self._outery: int = 0
+        self._innerx: int = 0
+        self._innery: int = 0
 
     def init_position(self, grid_pos, dc_id):
         self._dc_id = dc_id
@@ -53,9 +53,8 @@ class UAV:
         return
         
     def get_status(self):
-        status = f'Battery: {self._battery}\tOuter Position: ({self._outerx}, {self._outery})\tInner Postion: ({self._innerx}, {self._innery})'
-        print(status)
-        return status
+        return f'Battery: {self._battery}\tOuter Position: ({self._outerx}, {self._outery})\tInner Postion: ({self._innerx}, {self._innery})'
+        
 
     def transmit_payload(self) -> None:
         self.decrement_battery(Action.TRANSMIT)
@@ -65,7 +64,7 @@ class UAV:
 
         url = f'http://{INFERENCE_HOST}:{INFERENCE_PORT}/infer'
 
-        payload = {'id': self._dc_id, 'outx': self._outerx, 'outy': self._outery,
+        payload = {'dc_id': self._dc_id, 'outx': self._outerx, 'outy': self._outery,
                     'inx': self._innerx, 'iny': self._innery, 'image': image}
 
         r = requests.post(url, json=payload)
@@ -73,7 +72,7 @@ class UAV:
         return r
     
     def decrement_battery(self, action_type: Action, 
-                            new_pos):
+                            new_pos = None):
         
         match action_type:
             case Action.TRANSMIT:
