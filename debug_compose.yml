@@ -3,7 +3,8 @@ version: '3.3'
 services:
   drone1:
     container_name: drone1
-    image: sred21/drone
+    build:
+      context: ./src/drone
     environment:
       - PORT=64004
       - DC_HOST=dc1
@@ -19,7 +20,8 @@ services:
 
   dc1:
     container_name: dc1
-    image: sred21/drone-controller
+    build:
+      context: ./src/drone_controller
     environment:
       - PORT=64001
       - AC_HOST=ac
@@ -29,21 +31,23 @@ services:
 
   autoc:
     container_name: autoc
-    image: sred21/auto-controller
+    build:
+      context: ./src/autonomous_controller
     environment:
       - PORT=64002
       - CONTROLLER_HOSTS=dc1
       - CONTROLLER_PORT=64001
-      - OUTER_GRID=3
+      - OUTER_GRID=4
       - INNER_GRID=2
     ports:
       - 9001:64002
   
   inf:
     container_name: inf
-    image: sred21/edge-server
+    build:
+      context: ./src/inference_server
     environment:
       - PORT=64003
-      - AC_HOST=ac
+      - AC_HOST=autoc
       - AC_PORT=64002
       - INFERENCE_TIME=2

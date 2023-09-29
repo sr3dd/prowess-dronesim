@@ -1,0 +1,76 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "drone",
+            "type": "python",
+            "request": "launch",
+            "envFile": "${workspaceFolder}/env/drone",
+            "module": "uvicorn",
+            "args": [
+                "src.drone.main:app",
+                "--reload",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "64004"
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "dc",
+            "type": "python",
+            "request": "launch",
+            "envFile": "${workspaceFolder}/env/dc",
+            "module": "uvicorn",
+            "args": [
+                "src.drone_controller.main:app",
+                "--reload",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "64001"
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "ac",
+            "type": "python",
+            "request": "launch",
+            "envFile": "${workspaceFolder}/env/ac",
+            "module": "uvicorn",
+            "args": [
+                "src.autonomous_controller.app.main:app",
+                "--reload",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "64002"
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "inf",
+            "type": "python",
+            "request": "launch",
+            "envFile": "${workspaceFolder}/env/edge",
+            "module": "uvicorn",
+            "args": [
+                "src.inference_server.main:app",
+                "--reload",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "64003"
+            ],
+            "justMyCode": true
+        }
+    ],
+    "compounds": [
+        {
+          "name": "dronesim",
+          "configurations": ["drone", "dc", "ac", "inf"],
+          "stopAll": true
+        }
+      ]
+}
