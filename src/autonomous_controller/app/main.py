@@ -48,10 +48,17 @@ def init_dc_hosts():
         if dc_host['status'] == 'Available':
             new_grid_position = get_grid()
             
+            if not new_grid_position:
+                print('No more grid block available for allocation')
+                break
+
             init_drone(dc_host, new_grid_position)
             time.sleep(1)
 
 def get_grid():
+    if len(all_grid_blocks) == 0:
+        return None
+    
     grid_index = random.randrange(len(all_grid_blocks))
     return all_grid_blocks.pop(grid_index)
 
@@ -67,10 +74,17 @@ def reassign_drone_block(dc_id: str):
             print(f"Received an update from drone controller {dc_host['host']}")
 
             if dc_host['status'] == 'Available':
-                new_grid_position = get_grid()    
-                move_drone(dc_host, new_grid_position)
+                new_grid_position = get_grid()
 
-            return
+                if not new_grid_position:
+                    print('No more grid block available for allocation')
+                    return
+                 
+                move_drone(dc_host, new_grid_position)
+                break
+
+    print('Drone unavailable')
+    return
    
 app = FastAPI()
 
