@@ -1,7 +1,7 @@
 from fastapi import BackgroundTasks, FastAPI
 from pydantic import BaseModel
 
-from .uav import UAV
+from uav import UAV
 
 app = FastAPI()
 

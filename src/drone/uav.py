@@ -4,7 +4,7 @@ import time
 
 import requests
 
-from .models import Action
+from models import Action
 
 DC_HOST = os.environ['DC_HOST']
 DC_PORT = os.environ['DC_PORT']
