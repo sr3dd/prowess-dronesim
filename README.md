@@ -44,3 +44,7 @@ python k8s_generator.py -f config_file -t multipod -o output_file exp_name
 pyton k8s_generator.py -f config_file -t pod -o output_file exp_name
 
 ```
+
+## Acknowledgement
+
+This work was funded in part by the NSF AI-EDGE Institute.
