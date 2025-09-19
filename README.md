@@ -1,6 +1,6 @@
 # prowess-dronesim
 
-A simple framework to simulate drone workloads on the PROWESS testbed.
+A simple framework to simulate UAV swarm and distributed inference workloads on the PROWESS testbed.
 
 ![overview](assets/img/overview.png)
 
